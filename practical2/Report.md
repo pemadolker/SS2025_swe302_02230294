@@ -44,7 +44,8 @@ The main objectives of the practical were:
 - ├── go.mod
 - ├── go.sum
 - ├── coverage.out # Generated after test run
-- └── practical2.md # Documentation file
+- Report.md # Documentation file
+- screenshots
 
 
 ### 5. Test Implementation Summary
