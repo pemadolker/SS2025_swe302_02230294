@@ -1,0 +1,478 @@
+<!-- 
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>repository: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">testcontainers-demo/repository/user_repository.go (82.1%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">// repository/user_repository.go
+package repository
+
+import (
+        "context"
+        "database/sql"
+        "encoding/json"
+        "fmt"
+        "testcontainers-demo/models"
+        "time"
+
+        "github.com/redis/go-redis/v9"
+)
+
+// ============================================================================
+// EXERCISE 1: Basic Repository Setup
+// ============================================================================
+
+// UserRepository handles database operations for users
+type UserRepository struct {
+        db *sql.DB
+}
+
+// NewUserRepository creates a new user repository
+func NewUserRepository(db *sql.DB) *UserRepository <span class="cov8" title="1">{
+        return &amp;UserRepository{db: db}
+}</span>
+
+// GetByID retrieves a user by their ID (Exercise 1)
+func (r *UserRepository) GetByID(id int) (*models.User, error) <span class="cov8" title="1">{
+        query := "SELECT id, email, name, created_at FROM users WHERE id = $1"
+
+        var user models.User
+        err := r.db.QueryRow(query, id).Scan(
+                &amp;user.ID,
+                &amp;user.Email,
+                &amp;user.Name,
+                &amp;user.CreatedAt,
+        )
+
+        if err == sql.ErrNoRows </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("user not found")
+        }</span>
+        <span class="cov8" title="1">if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to get user: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return &amp;user, nil</span>
+}
+
+// GetByEmail retrieves a user by their email (Exercise 1)
+func (r *UserRepository) GetByEmail(email string) (*models.User, error) <span class="cov8" title="1">{
+        query := "SELECT id, email, name, created_at FROM users WHERE email = $1"
+
+        var user models.User
+        err := r.db.QueryRow(query, email).Scan(
+                &amp;user.ID,
+                &amp;user.Email,
+                &amp;user.Name,
+                &amp;user.CreatedAt,
+        )
+
+        if err == sql.ErrNoRows </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("user not found")
+        }</span>
+        <span class="cov8" title="1">if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to get user: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return &amp;user, nil</span>
+}
+
+// ============================================================================
+// EXERCISE 2: Complete CRUD Operations
+// ============================================================================
+
+// Create inserts a new user (Exercise 2)
+func (r *UserRepository) Create(email, name string) (*models.User, error) <span class="cov8" title="1">{
+        query := `
+                INSERT INTO users (email, name)
+                VALUES ($1, $2)
+                RETURNING id, email, name, created_at
+        `
+
+        var user models.User
+        err := r.db.QueryRow(query, email, name).Scan(
+                &amp;user.ID,
+                &amp;user.Email,
+                &amp;user.Name,
+                &amp;user.CreatedAt,
+        )
+
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("failed to create user: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return &amp;user, nil</span>
+}
+
+// Update modifies an existing user (Exercise 2)
+func (r *UserRepository) Update(id int, email, name string) error <span class="cov8" title="1">{
+        query := "UPDATE users SET email = $1, name = $2 WHERE id = $3"
+
+        result, err := r.db.Exec(query, email, name, id)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to update user: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">rowsAffected, err := result.RowsAffected()
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to get rows affected: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">if rowsAffected == 0 </span><span class="cov8" title="1">{
+                return fmt.Errorf("user not found")
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// Delete removes a user (Exercise 2)
+func (r *UserRepository) Delete(id int) error <span class="cov8" title="1">{
+        query := "DELETE FROM users WHERE id = $1"
+
+        result, err := r.db.Exec(query, id)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to delete user: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">rowsAffected, err := result.RowsAffected()
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to get rows affected: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">if rowsAffected == 0 </span><span class="cov8" title="1">{
+                return fmt.Errorf("user not found")
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// List retrieves all users (Exercise 2)
+func (r *UserRepository) List() ([]models.User, error) <span class="cov8" title="1">{
+        query := "SELECT id, email, name, created_at FROM users ORDER BY id"
+
+        rows, err := r.db.Query(query)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to list users: %w", err)
+        }</span>
+        <span class="cov8" title="1">defer rows.Close()
+
+        var users []models.User
+        for rows.Next() </span><span class="cov8" title="1">{
+                var user models.User
+                err := rows.Scan(&amp;user.ID, &amp;user.Email, &amp;user.Name, &amp;user.CreatedAt)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("failed to scan user: %w", err)
+                }</span>
+                <span class="cov8" title="1">users = append(users, user)</span>
+        }
+
+        <span class="cov8" title="1">if err = rows.Err(); err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("error iterating users: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return users, nil</span>
+}
+
+// ============================================================================
+// EXERCISE 3: Advanced Queries
+// ============================================================================
+
+// FindByNamePattern finds users whose name matches a pattern (Exercise 3)
+func (r *UserRepository) FindByNamePattern(pattern string) ([]models.User, error) <span class="cov8" title="1">{
+        query := "SELECT id, email, name, created_at FROM users WHERE name ILIKE $1 ORDER BY id"
+
+        rows, err := r.db.Query(query, pattern)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to find users by pattern: %w", err)
+        }</span>
+        <span class="cov8" title="1">defer rows.Close()
+
+        var users []models.User
+        for rows.Next() </span><span class="cov8" title="1">{
+                var user models.User
+                err := rows.Scan(&amp;user.ID, &amp;user.Email, &amp;user.Name, &amp;user.CreatedAt)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("failed to scan user: %w", err)
+                }</span>
+                <span class="cov8" title="1">users = append(users, user)</span>
+        }
+
+        <span class="cov8" title="1">if err = rows.Err(); err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("error iterating users: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return users, nil</span>
+}
+
+// CountUsers returns total number of users (Exercise 3)
+func (r *UserRepository) CountUsers() (int, error) <span class="cov8" title="1">{
+        query := "SELECT COUNT(*) FROM users"
+
+        var count int
+        err := r.db.QueryRow(query).Scan(&amp;count)
+        if err != nil </span><span class="cov0" title="0">{
+                return 0, fmt.Errorf("failed to count users: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return count, nil</span>
+}
+
+// GetRecentUsers returns users created in the last N days (Exercise 3)
+func (r *UserRepository) GetRecentUsers(days int) ([]models.User, error) <span class="cov8" title="1">{
+        query := `
+                SELECT id, email, name, created_at 
+                FROM users 
+                WHERE created_at &gt;= NOW() - INTERVAL '1 day' * $1
+                ORDER BY created_at DESC
+        `
+
+        rows, err := r.db.Query(query, days)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to get recent users: %w", err)
+        }</span>
+        <span class="cov8" title="1">defer rows.Close()
+
+        var users []models.User
+        for rows.Next() </span><span class="cov8" title="1">{
+                var user models.User
+                err := rows.Scan(&amp;user.ID, &amp;user.Email, &amp;user.Name, &amp;user.CreatedAt)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("failed to scan user: %w", err)
+                }</span>
+                <span class="cov8" title="1">users = append(users, user)</span>
+        }
+
+        <span class="cov8" title="1">if err = rows.Err(); err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("error iterating users: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return users, nil</span>
+}
+
+// ============================================================================
+// EXERCISE 4: Transaction Testing
+// ============================================================================
+
+// TransferUserData simulates a transaction involving multiple operations (Exercise 4)
+func (r *UserRepository) TransferUserData(fromID, toID int) error <span class="cov8" title="1">{
+        // Start transaction
+        tx, err := r.db.Begin()
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to begin transaction: %w", err)
+        }</span>
+
+        // Ensure transaction is committed or rolled back
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
+                if err != nil </span><span class="cov0" title="0">{
+                        tx.Rollback()
+                }</span>
+        }()
+
+        // Get source user
+        <span class="cov8" title="1">var fromUser models.User
+        err = tx.QueryRow("SELECT id, email, name, created_at FROM users WHERE id = $1", fromID).
+                Scan(&amp;fromUser.ID, &amp;fromUser.Email, &amp;fromUser.Name, &amp;fromUser.CreatedAt)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to get source user: %w", err)
+        }</span>
+
+        // Update target user with source user's name
+        <span class="cov8" title="1">result, err := tx.Exec("UPDATE users SET name = $1 WHERE id = $2", fromUser.Name, toID)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to update target user: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">rowsAffected, err := result.RowsAffected()
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to get rows affected: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">if rowsAffected == 0 </span><span class="cov8" title="1">{
+                return fmt.Errorf("target user not found")
+        }</span>
+
+        // Delete source user
+        <span class="cov8" title="1">_, err = tx.Exec("DELETE FROM users WHERE id = $1", fromID)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to delete source user: %w", err)
+        }</span>
+
+        // Commit transaction
+        <span class="cov8" title="1">err = tx.Commit()
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to commit transaction: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// ============================================================================
+// EXERCISE 5: Multi-Container Testing with Redis Cache
+// ============================================================================
+
+// CachedUserRepository handles database operations with Redis caching (Exercise 5)
+type CachedUserRepository struct {
+        db    *sql.DB
+        cache *redis.Client
+}
+
+// NewCachedUserRepository creates a new cached user repository
+func NewCachedUserRepository(db *sql.DB, cache *redis.Client) *CachedUserRepository <span class="cov8" title="1">{
+        return &amp;CachedUserRepository{
+                db:    db,
+                cache: cache,
+        }
+}</span>
+
+// GetByIDCached retrieves a user by ID with caching (Exercise 5)
+func (r *CachedUserRepository) GetByIDCached(id int) (*models.User, error) <span class="cov8" title="1">{
+        ctx := context.Background()
+        cacheKey := fmt.Sprintf("user:%d", id)
+
+        // Try cache first
+        cached, err := r.cache.Get(ctx, cacheKey).Result()
+        if err == nil </span><span class="cov8" title="1">{
+                var user models.User
+                if err := json.Unmarshal([]byte(cached), &amp;user); err == nil </span><span class="cov8" title="1">{
+                        return &amp;user, nil
+                }</span>
+        }
+
+        // Cache miss - query database
+        <span class="cov8" title="1">user, err := r.getFromDB(id)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        // Store in cache
+        <span class="cov8" title="1">data, err := json.Marshal(user)
+        if err == nil </span><span class="cov8" title="1">{
+                r.cache.Set(ctx, cacheKey, data, 5*time.Minute)
+        }</span>
+
+        <span class="cov8" title="1">return user, nil</span>
+}
+
+// getFromDB is a helper method to query the database (Exercise 5)
+func (r *CachedUserRepository) getFromDB(id int) (*models.User, error) <span class="cov8" title="1">{
+        query := "SELECT id, email, name, created_at FROM users WHERE id = $1"
+
+        var user models.User
+        err := r.db.QueryRow(query, id).Scan(
+                &amp;user.ID,
+                &amp;user.Email,
+                &amp;user.Name,
+                &amp;user.CreatedAt,
+        )
+
+        if err == sql.ErrNoRows </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("user not found")
+        }</span>
+        <span class="cov8" title="1">if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to get user: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return &amp;user, nil</span>
+}
+
+// InvalidateCache removes a user from cache (Exercise 5)
+func (r *CachedUserRepository) InvalidateCache(id int) error <span class="cov8" title="1">{
+        ctx := context.Background()
+        cacheKey := fmt.Sprintf("user:%d", id)
+        return r.cache.Del(ctx, cacheKey).Err()
+}</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html> -->
