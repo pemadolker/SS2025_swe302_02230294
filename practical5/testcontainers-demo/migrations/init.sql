@@ -8,5 +8,6 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Insert some test data
 INSERT INTO users (email, name) VALUES
-    ('alice@example.com', 'Alice Smith'),
+  npm run test:k6:stress
+  ('alice@example.com', 'Alice Smith'),
     ('bob@example.com', 'Bob Johnson');
