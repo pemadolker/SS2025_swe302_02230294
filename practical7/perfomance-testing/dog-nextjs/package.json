@@ -1,0 +1,41 @@
+{
+  "name": "dog-nextjs",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+  "test:k6:smoke": "k6 run tests/k6/smoke-test.js",
+  "test:k6:average": "k6 run tests/k6/average-load.js",
+  "test:k6:spike": "k6 run tests/k6/spike-load.js",
+  "test:k6:stress": "k6 run tests/k6/stress-test.js",
+  "test:k6:soak": "k6 run tests/k6/soak-test.js",
+  "test:k6:api": "k6 run tests/k6/api-endpoint-test.js",
+  "test:k6:page": "k6 run tests/k6/page-load-test.js",
+  "test:k6:custom": "k6 run tests/k6/custom-metrics-test.js",
+  "test:k6:concurrent": "k6 run tests/k6/concurrent-users-test.js",
+  "test:k6:cloud:smoke": "k6 cloud run tests/k6/smoke-test.js",
+  "test:k6:cloud:average": "k6 cloud run tests/k6/average-load.js",
+  "test:k6:cloud:spike": "k6 cloud run tests/k6/spike-load.js",
+  "test:k6:cloud:stress": "k6 cloud run tests/k6/stress-test.js",
+  "test:k6:cloud:soak": "k6 cloud run tests/k6/soak-test.js",
+  "test:k6:cloud:api": "k6 cloud run tests/k6/api-endpoint-test.js",
+  "test:k6:cloud:page": "k6 cloud run tests/k6/page-load-test.js",
+  "test:k6:cloud:custom": "k6 cloud run tests/k6/custom-metrics-test.js",
+  "test:k6:cloud:concurrent": "k6 cloud run tests/k6/concurrent-users-test.js"  
+  },
+  
+  "dependencies": {
+    "axios": "^1.13.2",
+    "next": "16.0.4",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "babel-plugin-react-compiler": "1.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.4"
+  }
+}
